@@ -1,5 +1,7 @@
 # Real-time streaming data pipeline for Twitter Tweets
 
+This is a data pipeline to stream live Tweets through a message broker (Kafka), a processing engine (Spark), and finally storing in a database (MongoDB).
+
 ## Architecture
 ![alt text](images/pipeline_architecture.png)
 
@@ -28,10 +30,11 @@ I use the Structured Streaming API to consume streams of data from Kafka and the
 > Structured Streaming is a scalable and fault-tolerant stream processing engine built on the Spark SQL engine. You can express your streaming computation the same way you would express a batch computation on static data. The Spark SQL engine will take care of running it incrementally and continuously and updating the final result as streaming data continues to arrive.
 > Structured Streaming queries are processed using a micro-batch processing engine, which processes data streams as a series of small batch jobs thereby achieving end-to-end latencies as low as 100 milliseconds and exactly-once fault-tolerance guarantees. 
 
-I pass the data through Spark as-is, because my focus when doing this project was on the pipeline. But any preprocessing/transformations/analytics of the Twitter data would be defined in this component.
+As the data passes through Spark, I simply filtered each record to only keep the payload (Tweet data), and discarded any Kafka metadata. My focus when doing this project was on the pipeline, but any other preprocessing/transformations/analytics of the streaming data can be defined in this component.
 
 **MongoDB**
 https://www.mongodb.com/
+
 MongoDB is an open source, document-oriented, NoSQL database.
 
 > MongoDB stores data in flexible, JSON-like documents, meaning fields can vary from document to document and data structure can be changed over time
