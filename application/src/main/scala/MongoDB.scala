@@ -7,11 +7,13 @@ object MongoDBConnection {
 
 	val mongodbconfig = ConfigFactory.load().getConfig("mongodb")
 
-	val mongoclient:MongoClient = MongoClient(mongodbconfig.getString("CONNECTION_STRING"))	
+	val connection_string:String = mongodbconfig.getString("CONNECTION_STRING")
+	val database_name:String = mongodbconfig.getString("DATABASE")
+	val collection_name:String = mongodbconfig.getString("COLLECTION")
 
-	val database:MongoDatabase = mongoclient.getDatabase(mongodbconfig.getString("DATABASE"))
-
-	val collection:MongoCollection[Document] = database.getCollection(mongodbconfig.getString("COLLECTION"));
+	val mongoclient:MongoClient = MongoClient(connection_string)	
+	val database:MongoDatabase = mongoclient.getDatabase(database_name)
+	val collection:MongoCollection[Document] = database.getCollection(collection_name)
 
 	val observer = new Observer[Completed] {
 		override def onNext(result: Completed): Unit = Unit//println("Inserted")

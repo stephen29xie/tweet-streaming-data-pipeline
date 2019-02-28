@@ -3,8 +3,9 @@ import kafka.MessagePublisher
 import spark.SparkStructuredStreamer
 
 object Main {
-	def main(args: Array[String]) {
 
+	def main(args: Array[String]) {
+    
   		// // Set up Kafka brokers and KafkaProducer to send messages to brokers
   		MessagePublisher
   		

@@ -1,0 +1,81 @@
+version: '3'
+
+# https://docs.docker.com/compose/compose-file/
+
+# Notes:
+
+# EXPOSE is used to expose ports without publishing them to the host machine — 
+# they’ll only be accessible to linked services on the same network.
+# The EXPOSE instruction does not actually publish the port. 
+# It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
+
+# PORTS is used to publish ports to a host. 
+# You can either use a short syntax, or give a more detailed configuration.
+# Either specify both ports (HOST:CONTAINER), or just the container port (an random, temporory host port is chosen).
+
+services:
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    # volumes:
+    #   - /data/db:/var/lib/docker/volumes/<volume-name>
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ""
+      MONGO_INITDB_ROOT_PASSWORD: ""
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports: 
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: "mongo"
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ""
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ""
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181"
+      
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka # use localhost for single broker
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "topicname:1:1"
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+
+  application:
+    build: ./application
+    restart: on-failure
+    ports:
+      - "80"
+    depends_on:
+      - mongo
+      - kafka
+
+
+
+
+
+
+
+
+
+
+
+
+

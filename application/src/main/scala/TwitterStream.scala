@@ -17,12 +17,19 @@ object TwitterStreamer {
   	val kafkaconfig = ConfigFactory.load().getConfig("kafka")
 	val twittercredconfig = ConfigFactory.load().getConfig("twittercredentials")
 
+	val CONSUMER_KEY:String = twittercredconfig.getString("CONSUMER_KEY")
+	val CONSUMER_KEY_SECRET:String = twittercredconfig.getString("CONSUMER_KEY_SECRET")
+	val ACCESS_TOKEN:String = twittercredconfig.getString("ACCESS_TOKEN")
+	val ACCESS_TOKEN_SECRET:String = twittercredconfig.getString("ACCESS_TOKEN_SECRET")
+
+	val kafkatopic:String = kafkaconfig.getString("TOPIC")
+
 	val cb = new ConfigurationBuilder
 	cb.setDebugEnabled(true)
-		.setOAuthConsumerKey(twittercredconfig.getString("CONSUMER_KEY"))
-	  	.setOAuthConsumerSecret(twittercredconfig.getString("CONSUMER_KEY_SECRET"))
-	  	.setOAuthAccessToken(twittercredconfig.getString("ACCESS_TOKEN"))
-	  	.setOAuthAccessTokenSecret(twittercredconfig.getString("ACCESS_TOKEN_SECRET"))
+		.setOAuthConsumerKey(CONSUMER_KEY)
+	  	.setOAuthConsumerSecret(CONSUMER_KEY_SECRET)
+	  	.setOAuthAccessToken(ACCESS_TOKEN)
+	  	.setOAuthAccessTokenSecret(ACCESS_TOKEN_SECRET)
 	    .setJSONStoreEnabled(true)
 
 	val statuslistener = new StatusListener {
@@ -30,7 +37,7 @@ object TwitterStreamer {
     StatusListener defines what to do with the tweets as they stream
     */
 		def onStatus(status:Status) {
-	    	MessagePublisher.sendMessage(kafkaconfig.getString("TOPIC"), 
+	    	MessagePublisher.sendMessage(kafkatopic, 
                                    		 TwitterObjectFactory.getRawJSON(status))
 		}
 		def onDeletionNotice(statusDeletionNotice:StatusDeletionNotice) {
@@ -54,8 +61,11 @@ object TwitterStreamer {
 	twitterStream.addListener(statuslistener)
 
 	val tweetfilterconfig = ConfigFactory.load().getConfig("tweetfilters")
-	val query = new FilterQuery().track(tweetfilterconfig.getString("KEYWORDS"))
-								               .language(tweetfilterconfig.getString("LANGUAGES"))
+	val keywords:String = tweetfilterconfig.getString("KEYWORDS")
+	val languages:String = tweetfilterconfig.getString("LANGUAGES")
+
+	val query = new FilterQuery().track(keywords)
+								 .language(languages)
 
   	def stream() {
 		twitterStream.filter(query)

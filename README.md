@@ -2,7 +2,16 @@
 
 This is a data pipeline to stream live Tweets through a message broker (Kafka), a processing engine (Spark), and finally storing in a database (MongoDB).
 
-## Architecture
+This application uses Docker for containerization.
+
+https://www.docker.com/
+> Docker is a computer program that performs operating-system-level virtualization, also known as "containerization".
+
+https://docs.docker.com/compose/
+> Compose is a tool for defining and running multi-container Docker applications.
+
+
+## Architecture Overview
 ![alt text](images/pipeline_architecture.png)
 
 **Twitter Streaming API**
@@ -46,20 +55,14 @@ Sample document in MongoDB:
 ![alt text](images/sample_tweet.png)
 
 # Usage:
-All configuration values needed to be input by the user are in **src/main/resources/application.conf**
-
-I will not go into details for server setups and configurations. Please refer to the official docs.
+All configuration values are in **application/src/main/resources/application.conf**
 
 1. 
-Set up an Apache Zookeeper server and an Apache Kafka server. Kafka uses Zookeeper so it must be properly configured to connect to eachother.
-
-Create a topic in Kafka.
-
-Set the BOOTSTRAP_SERVERS to be the comma seperated address(es) of your kafka brokers.
-Set the TOPIC to the topic you created
+Set the TOPIC to whatever you want to call it.
+Do not change BOOTSTRAP_SERVERS as it is already configured to connect to the Docker container that runs Kafka.
 ```
 kafka {
-	BOOTSTRAP_SERVERS = "localhost:9092"
+	BOOTSTRAP_SERVERS = "kafka:9092"
 	TOPIC = "topicname"
 }
 ```
@@ -67,20 +70,21 @@ kafka {
 2. 
 Set the Spark MASTER_URL
 > ...specifies the master URL for a distributed cluster, or local to run locally with one thread, local[N] to run locally with N threads, or local[*] to run locally with as many worker threads as logical cores on your machine.
+
 ```
 spark {
-	MASTER_URL = 'local[*]'
+	MASTER_URL = "local[*]"
 }
 ```
 
 3. 
 MongoDB
-Instantiate a MongoDB server and create a database and collection for storage. MongoDB Compass is the official GUI for MongoDB (https://www.mongodb.com/products/compass). I recommend this.
 
-Set the connection string, database name and collection name.
+Set the DATABASE name and COLLECTION name.
+Do not change CONNECTION_STRING as it is already configured to connect to the Docker container that runs MongoDB.
 ```
 mongodb {
-	CONNECTION_STRING = "mongodb://localhost:27017"
+	CONNECTION_STRING = "mongodb://mongo:27017"
 	DATABASE = "dbname"
 	COLLECTION = "collectionname"
 }
@@ -105,25 +109,26 @@ twittercredentials {
 	ACCESS_TOKEN_SECRET = "..."
 }
 ```
+
 5. 
 Change KEYWORDS to be a list of words to filter tweets on. Any tweet that contains these words will be returned in the streaming query. Change LANGUAGES to the languages of tweets you want to return. Currently set to english.
 ```
 tweetfilters {
-	KEYWORDS = "Scala,Python,Spark,Kafka"
+	KEYWORDS = "Scala,Apache,Spark,Kafka,Data"
 	LANGUAGES = "en"
 }
 ```
+
 6.
-Run application using SBT. SBT is a build tool for Scala.
-https://www.scala-sbt.org/1.x/docs/index.html
+In the top level directory containing docker-compose.yml,
 
-On the command line:
+Run ```docker-compose up``` to create and start the containers. This may take several minutes, and more to download/build the images first.
 
-```cd``` into ```data-pipeline```
-
-Run ```sbt run```
+Once running, you can visit http://localhost:8081 to browse the database on mongo-express, a web-based MongoDB admin interface.
 
 7.
-Hit Control-C to terminate.
+Hit Control-C to gracefully stop the containers.
+
+Run ```docker-compose down``` to remove the containers and network.
 
 
